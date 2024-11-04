@@ -1,0 +1,41 @@
+query RunInput {
+  cart {
+    lines {
+      id
+      quantity
+      cost {
+        amountPerQuantity {
+          amount
+        }
+      }
+      bundleID: attribute(key: "_bundleID") {
+        value
+      }
+      merchandise {
+        __typename
+        ... on ProductVariant {
+          id
+          product {
+            ... on Product {
+              id
+              twoPackPrice: metafield(
+                namespace: "custom"
+                key: "2_pack_bundle_discount"
+              ) {
+                value
+                type
+              }
+              threePackPrice: metafield(
+                namespace: "custom"
+                key: "3_pack_bundle_discount"
+              ) {
+                value
+                type
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
