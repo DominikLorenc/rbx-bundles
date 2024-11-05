@@ -15,6 +15,8 @@ export const run = (input: RunInput): FunctionResult => {
       threePackDiscount?: string | null;
       variantId?: string;
       productId?: string;
+      bundleID?: string;
+      cartMessage?: string;
     }[]
   > = {};
 
@@ -35,22 +37,24 @@ export const run = (input: RunInput): FunctionResult => {
         threePackDiscount: merchandise.product.threePackPrice?.value ?? null,
         variantId: merchandise.id,
         productId: merchandise.product.id,
+        bundleID,
+        cartMessage: line.cartMessage?.value ?? "",
       });
     }
   });
 
   const createBundleOperation = (
     group: (typeof groupedItems)[string],
-    bundleSize: number,
-    discount: string | null,
-    title: string,
-    bundleType: string
+    discount: string | null
   ): CartOperation | undefined => {
     if (group.length > 0 && discount) {
       const productId = group[0].productId?.split("/").pop() ?? "";
       const variantIds = group.flatMap(({ variantId, quantity }) =>
         new Array(quantity).fill(variantId?.split("/").pop() ?? "")
       );
+
+      const bundleId = group[0].bundleID ?? "";
+      const cartMessage = group[0].cartMessage ?? "";
 
       return {
         merge: {
@@ -72,6 +76,8 @@ export const run = (input: RunInput): FunctionResult => {
             { key: "_variantId", value: JSON.stringify(variantIds) },
             { key: "_productId", value: productId },
             { key: "_discount", value: discount },
+            { key: "_bundleId", value: bundleId },
+            { key: "_cartMessage", value: cartMessage },
           ],
         },
       };
@@ -87,23 +93,11 @@ export const run = (input: RunInput): FunctionResult => {
       );
 
       if (groupTotalQuantity === 2) {
-        return createBundleOperation(
-          group,
-          2,
-          group[0].twoPackDiscount ?? "0",
-          "2-Pack Bundle",
-          "2-pack"
-        );
+        return createBundleOperation(group, group[0].twoPackDiscount ?? "0");
       }
 
       if (groupTotalQuantity === 3) {
-        return createBundleOperation(
-          group,
-          3,
-          group[0].threePackDiscount ?? "0",
-          "3-Pack Bundle",
-          "3-pack"
-        );
+        return createBundleOperation(group, group[0].threePackDiscount ?? "0");
       }
 
       return;

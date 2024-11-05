@@ -11,6 +11,9 @@ query RunInput {
       bundleID: attribute(key: "_bundleID") {
         value
       }
+      cartMessage: attribute(key: "_cartMessage") {
+        value
+      }
       merchandise {
         __typename
         ... on ProductVariant {
