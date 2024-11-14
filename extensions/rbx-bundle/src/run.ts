@@ -17,11 +17,13 @@ export const run = (input: RunInput): FunctionResult => {
       productId?: string;
       bundleID?: string;
       cartMessage?: string;
+      discountValue?: string;
     }[]
   > = {};
 
   input.cart.lines.forEach((line) => {
     const bundleID = line.bundleID?.value;
+    const discountValue = line.discountValue?.value;
     if (bundleID && "product" in line.merchandise) {
       const merchandise = line.merchandise;
 
@@ -39,6 +41,7 @@ export const run = (input: RunInput): FunctionResult => {
         productId: merchandise.product.id,
         bundleID,
         cartMessage: line.cartMessage?.value ?? "",
+        discountValue: discountValue ?? "",
       });
     }
   });
@@ -55,6 +58,7 @@ export const run = (input: RunInput): FunctionResult => {
 
       const bundleId = group[0].bundleID ?? "";
       const cartMessage = group[0].cartMessage ?? "";
+      const discountValue = group[0].discountValue ?? "";
 
       return {
         merge: {
@@ -62,10 +66,10 @@ export const run = (input: RunInput): FunctionResult => {
             cartLineId: id,
             quantity,
           })),
-          parentVariantId: "gid://shopify/ProductVariant/43892934017146",
+          parentVariantId: "gid://shopify/ProductVariant/43895533109370",
           price: {
             percentageDecrease: {
-              value: discount,
+              value: `${discount}.0`,
             },
           },
           attributes: [
@@ -76,8 +80,9 @@ export const run = (input: RunInput): FunctionResult => {
             { key: "_variantId", value: JSON.stringify(variantIds) },
             { key: "_productId", value: productId },
             { key: "_discount", value: discount },
-            { key: "_bundleId", value: bundleId },
+            { key: "_bundleID", value: bundleId },
             { key: "_cartMessage", value: cartMessage },
+            { key: "_discountValue", value: discountValue },
           ],
         },
       };

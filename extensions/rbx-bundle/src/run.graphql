@@ -14,6 +14,9 @@ query RunInput {
       cartMessage: attribute(key: "_cartMessage") {
         value
       }
+      discountValue: attribute(key: "_discountValue") {
+        value
+      }
       merchandise {
         __typename
         ... on ProductVariant {
