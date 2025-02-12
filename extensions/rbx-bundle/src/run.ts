@@ -5,7 +5,6 @@ const NO_CHANGES: FunctionResult = {
 };
 
 export const run = (input: RunInput): FunctionResult => {
-  // Group cart lines by bundle ID with relevant product details
   const groupedItems: Record<
     string,
     {
@@ -46,9 +45,19 @@ export const run = (input: RunInput): FunctionResult => {
     }
   });
 
+  const extractDiscountFromString = (input: string): number => {
+    const match = input.match(/\d+/g);
+    if (match && match.length > 0) {
+      const discount = parseInt(match[match.length - 1], 10);
+
+      return discount <= 60 ? discount : 0;
+    }
+    return 0;
+  };
+
   const createBundleOperation = (
     group: (typeof groupedItems)[string],
-    discount: string | null
+    discount: string | null,
   ): CartOperation | undefined => {
     if (group.length > 0 && discount) {
       const productId = group[0].productId?.split("/").pop() ?? "";
@@ -58,7 +67,18 @@ export const run = (input: RunInput): FunctionResult => {
 
       const bundleId = group[0].bundleID ?? "";
       const cartMessage = group[0].cartMessage ?? "";
-      const discountValue = group[0].discountValue ?? "";
+      const discountValue = group[0].discountValue || "";
+
+      const additionalDiscountValue = extractDiscountFromString(discountValue);
+
+      const preparedAdditionalDiscountMessage =
+        additionalDiscountValue > 0 ? `${additionalDiscountValue}% off` : "";
+
+      const baseDiscount = parseFloat(discount);
+      const combinedDiscount =
+        !isNaN(baseDiscount) && additionalDiscountValue > 0
+          ? 100 - ((100 - baseDiscount) * (100 - additionalDiscountValue)) / 100
+          : baseDiscount;
 
       return {
         merge: {
@@ -69,7 +89,7 @@ export const run = (input: RunInput): FunctionResult => {
           parentVariantId: "gid://shopify/ProductVariant/43895533109370",
           price: {
             percentageDecrease: {
-              value: `${discount}.0`,
+              value: combinedDiscount.toFixed(2),
             },
           },
           attributes: [
@@ -83,6 +103,10 @@ export const run = (input: RunInput): FunctionResult => {
             { key: "_bundleID", value: bundleId },
             { key: "_cartMessage", value: cartMessage },
             { key: "_discountValue", value: discountValue },
+            {
+              key: "_additionalDiscountValue",
+              value: preparedAdditionalDiscountMessage,
+            },
           ],
         },
       };
