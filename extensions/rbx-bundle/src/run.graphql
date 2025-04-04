@@ -24,6 +24,7 @@ query RunInput {
           product {
             ... on Product {
               id
+              title
               twoPackPrice: metafield(
                 namespace: "custom"
                 key: "2_pack_bundle_discount"

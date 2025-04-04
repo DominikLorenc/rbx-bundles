@@ -17,6 +17,7 @@ export const run = (input: RunInput): FunctionResult => {
       bundleID?: string;
       cartMessage?: string;
       discountValue?: string;
+      title?: string;
     }[]
   > = {};
 
@@ -41,6 +42,7 @@ export const run = (input: RunInput): FunctionResult => {
         bundleID,
         cartMessage: line.cartMessage?.value ?? "",
         discountValue: discountValue ?? "",
+        title: merchandise?.product?.title ?? "",
       });
     }
   });
@@ -68,6 +70,7 @@ export const run = (input: RunInput): FunctionResult => {
       const bundleId = group[0].bundleID ?? "";
       const cartMessage = group[0].cartMessage ?? "";
       const discountValue = group[0].discountValue || "";
+      const title = group[0].title ?? undefined;
 
       const additionalDiscountValue = extractDiscountFromString(discountValue);
 
@@ -86,6 +89,7 @@ export const run = (input: RunInput): FunctionResult => {
             cartLineId: id,
             quantity,
           })),
+          title: title ? `${title} (Multi-Pack)` : undefined,
           parentVariantId: "gid://shopify/ProductVariant/43895533109370",
           price: {
             percentageDecrease: {
@@ -135,3 +139,5 @@ export const run = (input: RunInput): FunctionResult => {
 
   return operations.length ? { operations } : NO_CHANGES;
 };
+
+
